@@ -1,24 +1,37 @@
 #include <stdio.h>
 
 int main() {
-  FILE *archivo;
-  char nombreArchivo[] = "outputTexto.txt";
+  FILE * outputTexto, inputBinario; 
+  void * p;
 
-  archivo = fopen(nombreArchivo, "w");
+  char nombreArchivoEntrada[] = "inputBinario.bin";
 
-  if (archivo == NULL) {
+  inputBinario = fopen( nombreArchivoEntrada[], "rb");
+
+if (inputBinario == NULL) {
+    printf("No se pudo abrir el archivo.\n");
+    return 1; 
+  }
+int fread ( p, int 1, int 198, inputBinario);
+//close 
+
+  char nombreArchivoSalida[] = "outputTexto.txt";
+
+  outputTexto = fopen(nombreArchivoSalida, "w");
+
+  if (outputTexto == NULL) {
     printf("No se pudo abrir el archivo.\n");
     return 1; 
   }
 
-  fputs(cadena, archivo);//eof
+  fputs(cadena, outputTexto);//eof
 
-  fclose(archivo);
+  fclose(outputTexto);
 
 
   return 0; 
 }
-
+"""
 inputBinario.bin 
 apertura
 lectura
@@ -27,3 +40,4 @@ lectura
 outputTexto.txt
 escritura 
 cierre
+"""
