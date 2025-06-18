@@ -1,4 +1,0 @@
--cantidad de datos en el archivo de entrada
--reservar memoria dinamica del tamaño apropiado para la entrada y salida
--realizar la lectura
--invocar func assembler correspondiente 
