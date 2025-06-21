@@ -1,7 +1,7 @@
 # Trabajo Práctico Integrador - Codificación BASE64
 
 ## Integrantes
-- Martina 
+- Martina Laskowski
 - Agustin Cordoba Barrenechea
 
 ## Descripción
