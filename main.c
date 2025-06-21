@@ -3,7 +3,7 @@
 int main() {
     FILE *inputBinario;
     FILE *outputTexto;  
-    char buffer[198];    
+    char buffer[189];    
     size_t cantidadLeida;
 
     char nombreArchivoEntrada[] = "inputBinario.bin";
@@ -16,7 +16,7 @@ int main() {
         return 1;
     }
 
-    cantidadLeida = fread(buffer, 1, 198, inputBinario);  
+    cantidadLeida = fread(buffer, 1, 189, inputBinario);  
     printf("Se leyeron %zu bytes.\n", cantidadLeida);
 
     fclose(inputBinario);
