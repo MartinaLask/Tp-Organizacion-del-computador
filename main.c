@@ -38,13 +38,4 @@ int main() {
   
     return 0; 
   }
-  """
-  inputBinario.bin 
-apertura
-lectura
-
-
-outputTexto.txt
-escritura 
-cierre
-"""
+ 
