@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Compilar código assembler
-nasm -f elf64 base64_encode.asm -o base64_encode.o
+nasm -f elf64 base64_encoder.asm -o base64_encoder.o
 
 # Compilar código C y enlazar
-gcc -no-pie -z main.c base64_encode.o -o base64_encode -Wall -Wextra
+gcc main.c base64_encoder.o -o base64_encoder
 
-echo "Compilación exitosa. Ejecutar con: ./base64_encode"
+echo "Compilación exitosa. Ejecutar con: ./base64_encoder"

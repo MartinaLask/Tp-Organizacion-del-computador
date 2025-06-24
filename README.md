@@ -11,7 +11,7 @@ Implementación para grupos de 2 alumnos según especificaciones del TP.
 ## Estructura de Archivos
 Tp-Organizacion-del-computador/
 ├── main.c # Programa principal (manejo de archivos)
-├── base64_encode.asm # Algoritmo de codificación en assembler
+├── base64_encoder.asm # Algoritmo de codificación en assembler
 ├── compile.sh #Script de compilacion
 └── README.md
 
@@ -33,6 +33,6 @@ inputBinario.bin
 
 2. Ejecutar el programa:
 ```bash
-./base64_encode
+./base64_encoder
 ```
 3. El resultado se guardara en outputTexto.txt
