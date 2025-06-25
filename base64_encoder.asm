@@ -1,140 +1,111 @@
-section .note.GNU-stack noalloc noexec nowrite progbits
-
 section .data
 base64_table db "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 section .text
 global base64_encode
 
-base64_encode:
-    push r12
-    push r13
-    push r14
-    push r15
-    push rbx                  ; Preservar rbx 
-    mov r12, rdi              ; input buffer
-    mov r13, rsi              ; input length
-    mov r14, rdx              ; output buffer
-    mov r15, rdx              ; inicio de output
+;_______________________________MACROS________________________________________
+%macro PUT_CHAR 2
+    mov ebx, r12d
+    shr ebx, %1
+    and ebx, 0x3F
+    mov al, [r15 + rbx]    ; Usar registro r15 para tabla
+    mov [r9 + %2], al
+%endmacro
 
-    ; Calcular grupos completos
-    mov rax, r13
-    xor rdx, rdx
-    mov rcx, 3
-    div rcx
-    mov rcx, rax              ; contador de grupos
-
-    lea r11, [rel base64_table]
-
-    ; Procesar grupos completos
-    test rcx, rcx
-    jz .handle_rest
-.process_group:
-    ; Cargar 3 bytes 
-    movzx eax, byte [r12]
-    shl eax, 16
-    movzx ebx, byte [r12+1]
-    shl ebx, 8
-    or eax, ebx
-    movzx ebx, byte [r12+2]
-    or eax, ebx
-
-    ; Extraer índices
-    mov r8, rax
-    shr r8, 18
-    and r8, 0x3F
-
-    mov r9, rax
-    shr r9, 12
-    and r9, 0x3F
-
-    mov r10, rax
-    shr r10, 6
-    and r10, 0x3F
-
-    and rax, 0x3F
-
-    ; Mapear a caracteres
-    mov al, [r11 + rax]
-    mov r10b, [r11 + r10]
-    mov r9b, [r11 + r9]
-    mov r8b, [r11 + r8]
-
-    ; Almacenar
-    mov [r14], r8b
-    mov [r14+1], r9b
-    mov [r14+2], r10b
-    mov [r14+3], al
-
-    add r12, 3
-    add r14, 4
-    loop .process_group
-
-.handle_rest:
-    cmp rdx, 0
-    je .done
-    cmp rdx, 2
-    je .two_bytes
-
-    ; Caso 1 byte 
-.one_byte:
-    movzx eax, byte [r12]     ; Cargar solo el byte válido
-    shl eax, 16               ; [byte1, 0x00, 0x00]
-
-    ; Extraer solo 2 índices válidos
-    mov r8, rax
-    shr r8, 18
-    and r8, 0x3F
-
-    mov r9, rax
-    shr r9, 12
-    and r9, 0x3F
-
-    ; Mapear
-    mov r8b, [r11 + r8]
-    mov r9b, [r11 + r9]
-
-    mov [r14], r8b
-    mov [r14+1], r9b
-    mov byte [r14+2], '='     ; Relleno directo 
-    mov byte [r14+3], '='     ; Relleno directo 
-    add r14, 4
-    jmp .done
-
-.two_bytes:
-    ; Cargar 2 bytes 
-    movzx eax, word [r12]     ; Carga little-endian: [byte1, byte2]
-    shl eax, 8                ; [byte1, byte2, 0x00]
-
-    mov r8, rax
-    shr r8, 18
-    and r8, 0x3F
-
-    mov r9, rax
-    shr r9, 12
-    and r9, 0x3F
-
-    mov r10, rax
-    shr r10, 6
-    and r10, 0x3F
-
-    ; Mapear
-    mov r8b, [r11 + r8]
-    mov r9b, [r11 + r9]
-    mov r10b, [r11 + r10]
-
-    mov [r14], r8b
-    mov [r14+1], r9b
-    mov [r14+2], r10b
-    mov byte [r14+3], '='     ; Relleno
-    add r14, 4
-
-.done:
-    mov rax, r14
-    sub rax, r15
-    pop rbx                   ; Restaurar rbx 
+%macro CLEANUP 0
     pop r15
     pop r14
     pop r13
     pop r12
+    pop rbx
+    pop rbp
     ret
+%endmacro
+
+;____________________FUNCION PRINCIPAL_________________________
+base64_encode:
+    push rbp
+    mov rbp, rsp
+    push rbx
+    push r12
+    push r13
+    push r14
+    push r15
+
+    ; Cargar tabla en registro permanente
+    lea r15, [rel base64_table]
+    
+    ; Verificar entrada vacía
+    test rsi, rsi
+    jz .fin
+    
+    ; Configurar punteros y contadores
+    mov r8, rdi         ; input
+    mov rcx, rsi        ; input_len (64 bits)
+    mov r9, rdx         ; output
+    xor r10, r10        ; offset (64 bits)
+
+.loop:
+    mov rax, rcx
+    sub rax, r10
+    cmp rax, 3
+    jge .convertir_3
+    cmp rax, 2
+    je .convertir_2
+    cmp rax, 1
+    je .convertir_1
+    jmp .fin
+
+.convertir_3:
+    ; Cargar 3 bytes usando acceso de 32 bits
+    mov eax, [r8 + r10]     ; Carga 4 bytes (usamos 3)
+    bswap eax               ; Corrección endianness
+    shr eax, 8              ; Eliminar byte extra
+    mov r12d, eax
+
+    ; Codificar a Base64
+    PUT_CHAR 18, 0
+    PUT_CHAR 12, 1
+    PUT_CHAR 6,  2
+    PUT_CHAR 0,  3
+
+    add r10, 3
+    add r9, 4
+    jmp .loop
+
+.convertir_2:
+    ; Cargar 2 bytes
+    movzx eax, word [r8 + r10]
+    xchg al, ah             ; Corrección endianness
+    shl eax, 8              ; Alinear correctamente
+    mov r12d, eax
+
+    PUT_CHAR 18, 0
+    PUT_CHAR 12, 1
+    PUT_CHAR 6,  2
+    mov byte [r9 + 3], '='  ; Padding
+
+    add r10, 2
+    add r9, 4
+    jmp .loop
+
+.convertir_1:
+    ; Cargar 1 byte
+    movzx eax, byte [r8 + r10]
+    shl eax, 16             ; Alinear correctamente
+    mov r12d, eax
+
+    PUT_CHAR 18, 0
+    PUT_CHAR 12, 1
+    mov byte [r9 + 2], '='
+    mov byte [r9 + 3], '='
+
+    add r10, 1
+    add r9, 4
+    jmp .loop
+
+.fin:
+    CLEANUP
+section .note.GNU-stack
+    dd 0
