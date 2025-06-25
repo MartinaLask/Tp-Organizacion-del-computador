@@ -4,7 +4,7 @@
 extern void base64_encode(const unsigned char *input, size_t input_len, char *output);
 
 int main() {
-    const char* input_file = "codificacion.bin";
+    const char* input_file = "inputBinario.bin";
     const char* output_file = "outputTexto.txt";
 
     // Abrir archivo binario
